@@ -4,10 +4,7 @@
 #include <iostream>
 #include <thread>
 
-struct Point
-{
-    int x;
-};
+#include "type.hpp"
 
 int main()
 {
@@ -15,25 +12,40 @@ int main()
 
     iox::popo::PublisherOptions options;
     options.nodeName = "Pub_Node_With_Options";
-    options.subscriberTooSlowPolicy = iox::popo::ConsumerTooSlowPolicy::WAIT_FOR_CONSUMER;
-    iox::popo::Publisher<Point> publisher({"aa", "bb", "cc"}, options);
+    options.subscriberTooSlowPolicy = iox::popo::ConsumerTooSlowPolicy::WAIT_FOR_CONSUMER;  // 必要
+    iox::popo::Publisher<Test> publisher({"aa", "bb", "cc"}, options);
 
-    publisher.offer();
-    while (!publisher.hasSubscribers())
-    {
-        std::this_thread::yield();
+    {  // 非必要等待，会导致cpu占用高
+        publisher.offer();
+        while (!publisher.hasSubscribers())
+        {
+            std::this_thread::yield();
+        }
     }
 
-    int ct = 1000;
+    int64_t count_start = std::chrono::duration_cast<std::chrono::microseconds>(
+                              std::chrono::system_clock::now().time_since_epoch())
+                              .count();
+
+    int ct = 10 * 10000;
     while (ct-- > 0)
     {
-        publisher.publishCopyOf(Point{ct}).or_else([](auto) { std::cerr << "send failed\n"; });
+        Test test{ct};
+        test.client_req_dt = std::chrono::duration_cast<std::chrono::microseconds>(
+                                 std::chrono::system_clock::now().time_since_epoch())
+                                 .count();
+        publisher.publishCopyOf(test).or_else([](auto) { std::cerr << "send failed\n"; });
 
         // if there is a waiting time, the subscriber can receive all 1000 messages.
         // if there is no waiting time, the subscriber cannot receive all 1000 messages.
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    std::cout << "push end." << std::endl;
-    iox::posix::waitForTerminationRequest();
+    int64_t count_dt = std::chrono::duration_cast<std::chrono::microseconds>(
+                           std::chrono::system_clock::now().time_since_epoch())
+                           .count() -
+                       count_start;
+
+    std::cout << "push end. count_dt:" << count_dt / 1000 << "(ms)" << std::endl;
+    // iox::posix::waitForTerminationRequest();
     return 0;
 }
