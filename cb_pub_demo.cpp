@@ -31,6 +31,9 @@ int main()
     while (ct-- > 0)
     {
         Test test{ct};
+        memcpy(&test.cc, "hello xxxxx ffff", 17);
+        test.cc[17] = 0;
+
         test.client_req_dt = std::chrono::duration_cast<std::chrono::microseconds>(
                                  std::chrono::system_clock::now().time_since_epoch())
                                  .count();
@@ -38,7 +41,7 @@ int main()
 
         // if there is a waiting time, the subscriber can receive all 1000 messages.
         // if there is no waiting time, the subscriber cannot receive all 1000 messages.
-        // std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     int64_t count_dt = std::chrono::duration_cast<std::chrono::microseconds>(
                            std::chrono::system_clock::now().time_since_epoch())

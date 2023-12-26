@@ -1,0 +1,13 @@
+# iox-roudi -c xxx.toml
+
+[general]
+version = 1
+
+[[segment]]
+
+
+[[segment.mempool]]
+size = 2048
+count = 1000
+
+

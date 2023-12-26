@@ -22,17 +22,22 @@ void onSampleReceivedCallback(iox::popo::Subscriber<Test> *subscriber)
             dt_max = std::max(dt_max, dt);
             dt_min = std::min(dt_min, dt);
 
-            if (counter % 1000 == 0)
-            {
-                std::cout << "received x: " << sample->x << ", counter:" << counter << std::endl;
-                std::cout << "dt:" << dt << ", max:" << dt_max << ", min:" << dt_min << std::endl;
-            }
+            // if (counter % 1000 == 0)
+            // {
+            //     std::cout << "received x: " << sample->x << ", counter:" << counter << std::endl;
+            //     std::cout << "dt:" << dt << ", max:" << dt_max << ", min:" << dt_min <<
+            //     std::endl;
+            // }
+
+            std::cout << counter << ',' << dt << std::endl;
         });
     }
 }
 
 int main()
 {
+    std::cout << "number, value" << std::endl;
+
     iox::runtime::PoshRuntime::initRuntime("test_cb_sub");
 
     iox::popo::SubscriberOptions options;
